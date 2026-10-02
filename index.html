@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#ffd9a8" />
+<title>合成大一中</title>
+
+<!-- 手机加到桌面时的图标 -->
+<link rel="icon" href="favicon.png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="apple-touch-icon-precomposed" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="合成大一中" />
+
+<!-- 发到微信/QQ 时显示的标题、说明、缩略图（网址上线后要改成本人的真实网址） -->
+<meta name="description" content="黄梅一中版合成大西瓜：一小合五小、五小合七小……一路合到黄梅一中！免费无广告。" />
+<meta property="og:title" content="合成大一中" />
+<meta property="og:description" content="从一小一路合成到黄梅一中，看看你能合到第几级！" />
+<meta property="og:image" content="https://你的网址/share.png" />
+
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ============ 左：棋盘 ============ -->
+  <main class="stage" id="stage">
+    <canvas id="board"></canvas>
+  </main>
+
+  <!-- ============ 右：信息栏 ============ -->
+  <aside class="panel" id="panel">
+
+    <h1 class="title" id="uiTitle">合成大一中</h1>
+
+    <div class="coins" id="uiCoins">🪙×0</div>
+
+    <div class="stats">
+      <div class="stat">
+        <span class="k">分数</span>
+        <span class="v" id="uiScore">0</span>
+      </div>
+      <div class="stat">
+        <span class="k">最高分</span>
+        <span class="v" id="uiBest">0</span>
+      </div>
+    </div>
+
+    <div class="next">
+      <span class="k">下一个</span>
+      <canvas id="next" width="128" height="128"></canvas>
+    </div>
+
+    <div class="chart">
+      <div class="chart-title">合成表</div>
+      <div class="chart-list" id="chartList"></div>
+      <p class="chart-tip" id="chartTip"></p>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="btnRank">🏆排行榜</button>
+      <button class="btn" id="btnSound">🔊音效开</button>
+      <button class="btn" id="btnRestart">↻重开</button>
+    </div>
+
+    <div class="nick-row">
+      <span class="k">我的昵称</span>
+      <input class="nick-input" id="uiNick" maxlength="12" placeholder="默认用户" />
+    </div>
+
+    <p class="tips" id="uiTips"></p>
+  </aside>
+</div>
+
+<!-- ============ 结束遮罩 1：还能再救一下 ============ -->
+<div class="mask hidden" id="maskRevive">
+  <div class="dialog">
+    <div class="emoji">😵</div>
+    <h2>还能再救一下</h2>
+    <p class="line">本局得分 <b id="rvScore">0</b></p>
+    <p class="sub">清掉警戒线以上的水果，接着玩</p>
+    <button class="btn primary wide" id="btnRevive">🪙 用一枚复活币</button>
+    <p class="hint-line" id="rvCoinLeft">还剩 1 枚</p>
+    <button class="btn ghost wide" id="btnGiveUp">不了，结束吧</button>
+  </div>
+</div>
+
+<!-- ============ 结束遮罩 2：结算 ============ -->
+<div class="mask hidden" id="maskOver">
+  <div class="dialog">
+    <h2>游戏结束</h2>
+    <p class="line">本局得分 <b id="ovScore">0</b></p>
+    <p class="sub">最高分 <span id="ovBest">0</span></p>
+    <p class="state" id="ovState">正在结算…</p>
+    <div class="nick-line">
+      昵称：<b id="ovNick">默认用户</b>
+      <button class="link" id="btnEditNick">改昵称</button>
+      <button class="link hidden" id="btnRetry">重试提交</button>
+    </div>
+    <div class="dialog-actions">
+      <button class="btn" id="btnRank2">🏆 排行榜</button>
+      <button class="btn primary" id="btnAgain">再来一局</button>
+      <button class="btn ghost" id="btnSponsor">🌶️ 可以赏作者一包辣条嘛</button>
+    </div>
+    <p class="foot">按 R 键也可重新开始</p>
+  </div>
+</div>
+
+<!-- ============ 排行榜弹窗 ============ -->
+<div class="mask hidden" id="maskRank">
+  <div class="dialog wide-dialog">
+    <h2>🏆 排行榜</h2>
+    <div class="nick-row compact">
+      <span class="k">我的昵称</span>
+      <input class="nick-input" id="rankNick" maxlength="12" placeholder="默认用户" />
+    </div>
+    <ol class="rank-list" id="rankList"></ol>
+    <p class="foot" id="rankFoot">榜单为最近 20 次提交</p>
+    <button class="btn primary wide" id="btnRankClose">知道了</button>
+  </div>
+</div>
+
+<!-- ============ 赞助弹窗 ============ -->
+<div class="mask hidden" id="maskSponsor">
+  <div class="dialog">
+    <h2>🌶️ 赏作者一包辣条</h2>
+    <p class="sub" id="spText">这游戏完全免费，也没有任何广告。<br />要是它逗你笑了一下，赏作者一包辣条呗 🌶️</p>
+    <img class="qr" id="spQr" alt="收款二维码" />
+    <p class="foot" id="spFoot">微信扫一扫 · 一包辣条 · 全凭心意</p>
+    <button class="btn primary wide" id="btnSponsorClose">好，下次一定</button>
+  </div>
+</div>
+
+<!-- 换皮只改 config.js -->
+<script src="config.js"></script>
+<!-- 游戏逻辑 + 自研物理 + 排行榜 -->
+<script src="game.js"></script>
+
+</body>
+</html>
